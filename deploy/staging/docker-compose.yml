@@ -1,0 +1,34 @@
+version: "3.9"
+services:
+  server:
+    image: ${APP_NAME}:${APP_VERSION}
+    container_name: ${CONTAINER_NGINX_NAME}
+    network_mode: "host"
+    depends_on:
+      - app
+    volumes:
+      - ${ROOT_PATH}/build:/root/${APP_NAME}/build
+      - ${ROOT_PATH}/server.js:/root/${APP_NAME}/server.js
+    command: npm run build:module && node server.js
+
+  app:
+    stdin_open: true
+    tty: true
+    image: ${APP_NAME}:${APP_VERSION}
+    container_name: ${CONTAINER_BUILD_NAME}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        - HTTP_PROXY=${HTTP_PROXY}
+        - HTTPS_PROXY=${HTTPS_PROXY}
+        - PORT=${NGINX_PORT}
+
+    restart: unless-stopped
+    network_mode: "host"
+    expose:
+      - 3000
+    volumes:
+      - /root/${APP_NAME}/node_modules
+      - ${ROOT_PATH}/:/root/${APP_NAME}/
+    command: npm run start

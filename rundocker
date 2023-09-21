@@ -1,0 +1,203 @@
+#!/bin/bash
+cmd=$2
+enviroment=$1
+
+# define service enviroment
+PRODUCTION="production"
+STAGING="staging"
+DEVELOP="develop"
+
+REBUILD_SLEEP_SEC=2
+
+
+usage() {
+    echo "rundockerenv <enviroment> <command> [options]"
+    echo "Available enviroments:"
+    echo " all                  all enviroments"
+    echo " $PRODUCTION          production eviroment"
+    echo " $STAGING             staging eviroment"
+    echo " $DEVELOP             develop eviroment"
+
+    echo "Available commands:"
+    echo " build                deploy service"
+    echo " up                   deploy service"
+    echo " stop                 stop and remove containers, networks"
+    echo " reup                 re-up service"
+    echo " restart              restart services or server-name"
+    echo " logs                 show logs"
+    echo " ps                   show container running"
+    echo " exec                 exec container in docker"
+    echo " build_module         build or rebuild module for zailab-tools-main"
+
+    echo "Available options:"
+    echo " --build              rebuild when up"
+    echo " --volumes            remove volumes when down"
+}
+
+get_env_file() {
+    enviroment=$1
+    env_file="docker/$enviroment/.env"
+    echo "$env_file"
+}
+
+get_docker_compose_file() {
+    enviroment=$1
+    docker_compose_file="docker/docker-compose.yml"
+    echo "$docker_compose_file"
+}
+
+build() {
+    enviroment=$1
+    shift
+    echo "$enviroment building..."
+
+    env_file=$(get_env_file $enviroment)
+    docker_compose_file=$(get_docker_compose_file $enviroment)
+
+    # Use docker-compose
+    docker-compose -f "$docker_compose_file" --env-file "$env_file" build "$@"
+}
+
+
+up() {
+    enviroment=$1
+    shift
+    echo "$enviroment building..."
+
+    env_file=$(get_env_file $enviroment)
+    docker_compose_file=$(get_docker_compose_file $enviroment)
+
+    # Use docker-compose
+    docker-compose -f "$docker_compose_file" --env-file "$env_file" up -d "$@"
+}
+
+down() {
+    enviroment=$1
+    shift
+    echo "$enviroment building..."
+
+    env_file=$(get_env_file $enviroment)
+    docker_compose_file=$(get_docker_compose_file $enviroment)
+
+    # Use docker-compose
+    docker-compose -f "$docker_compose_file" --env-file "$env_file" down "$@"
+}
+
+
+logs() {
+    enviroment=$1
+    shift
+    echo "$enviroment building..."
+
+    env_file=$(get_env_file $enviroment)
+    docker_compose_file=$(get_docker_compose_file $enviroment)
+
+    # Use docker-compose
+    docker-compose -f "$docker_compose_file" --env-file "$env_file" logs "$@"
+}
+
+
+exec() {
+    enviroment=$1
+    shift
+    echo "$enviroment building..."
+
+    env_file=$(get_env_file $enviroment)
+    docker_compose_file=$(get_docker_compose_file $enviroment)
+
+    # Use docker-compose
+    docker-compose -f "$docker_compose_file" --env-file "$env_file" exec "$@"
+}
+
+
+start() {
+    enviroment=$1
+    shift
+    echo "$enviroment building..."
+
+    env_file=$(get_env_file $enviroment)
+    docker_compose_file=$(get_docker_compose_file $enviroment)
+
+    # Use docker-compose
+    docker-compose -f "$docker_compose_file" --env-file "$env_file" start "$@"
+}
+
+
+stop() {
+    enviroment=$1
+    shift
+    echo "$enviroment building..."
+
+    env_file=$(get_env_file $enviroment)
+    docker_compose_file=$(get_docker_compose_file $enviroment)
+
+    # Use docker-compose
+    docker-compose -f "$docker_compose_file" --env-file "$env_file" stop "$@"
+}
+
+
+restart() {
+    enviroment=$1
+    shift
+    echo "$enviroment building..."
+
+    env_file=$(get_env_file $enviroment)
+    docker_compose_file=$(get_docker_compose_file $enviroment)
+
+    # Use docker-compose
+    docker-compose -f "$docker_compose_file" --env-file "$env_file" restart "$@"
+}
+
+if [[ -z "$cmd" ]]; then
+    echo "Missing command"
+    usage
+    exit 1
+fi
+
+if [[ -z "$enviroment" ]]; then
+    echo "Missing enviroment"
+    usage
+    exit 1
+fi
+
+shift 2
+
+case $cmd in
+build)
+    shift
+    build $enviroment "$@"
+    ;;
+up)
+    shift
+    up $enviroment "$@"
+    ;;
+down)
+    shift
+    down $enviroment "$@"
+    ;;
+logs)
+    shift
+    logs $enviroment "$@"
+    ;;
+exec)
+    shift
+    exec $enviroment "$@"
+    ;;
+start)
+    shift
+    start $enviroment "$@"
+    ;;
+stop)
+    shift
+    stop $enviroment "$@"
+    ;;
+restart)
+    shift
+    restart $enviroment "$@"
+    ;;
+*)
+    echo "Unknown enviroment"
+    usage
+    exit 1
+    ;;
+esac

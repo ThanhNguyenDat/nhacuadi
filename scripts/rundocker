@@ -1,0 +1,198 @@
+#!/bin/bash
+cmd=$2
+enviroment=$1
+
+REBUILD_SLEEP_SEC=2
+
+DOCKER_COMPOSE_FILE="deploy/$enviroment/docker-compose.yml"
+ENV_FILE="deploy/$enviroment/.env"
+source $ENV_FILE
+
+usage() {
+    echo "rundocker <enviroment> <action> [options]"
+    echo "Available enviroments:"
+    echo " production           production eviroment"
+    echo " staging              staging eviroment"
+    echo " development          development eviroment"
+
+    echo "Available commands:"
+    echo " build                deploy service"
+    echo " up                   deploy service"
+    echo " stop                 stop and remove containers, networks"
+    echo " reup                 re-up service"
+    echo " restart              restart services or server-name"
+    echo " logs                 show logs"
+    echo " ps                   show container running"
+    echo " exec                 exec container in docker"
+    echo " build_module         build or rebuild frontend label-studio"
+    echo " collectstatic        get static files django"
+    echo " dump_db              dump database to file"
+    echo " createsuperuser      create superuser"
+
+    echo "Available options:"
+    echo " --build              rebuild when up"
+    echo " --volumes            remove volumes when down"
+}
+
+build() {
+    echo "Starting build image in $enviroment with $ENV_FILE"
+
+    # Use docker-compose
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE build "$@"
+    echo "Done build image in $enviroment"
+}
+
+up() {
+    echo "Starting up container services in $enviroment with $ENV_FILE"
+
+    # Use docker-compose
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE up -d "$@"
+    echo "Done up containers in $enviroment"
+}
+
+down() {
+    echo "Starting down container services in $enviroment with $ENV_FILE"
+
+    # Use docker-compose
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE down "$@"
+    echo "Done down containers in $enviroment"
+}
+
+restart() {
+    echo "Restarting services in $enviroment with $ENV_FILE"
+
+    # Use docker-compose
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE restart "$@"
+    echo "Done restart containers in $enviroment"
+}
+
+ps() {
+    echo "$enviroment ps"
+
+    # Use docker-compose
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE ps "$@"
+}
+
+logs() {
+    echo "Starting get logs in $enviroment"
+
+    # Use docker-compose
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE logs "$@"
+    echo "Done get logs in $enviroment"
+}
+
+exec() {
+    echo "Starting exec container in $enviroment"
+
+    # Use docker-compose
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE exec "$@"
+
+    echo "Done exec container in $enviroment"
+}
+
+build_module() {
+    echo "Starting build frontend in $enviroment"
+
+    script_rebuild="
+        mkdir -p ${APP_ROOT}/${APP_NAME}/.npm
+        chown -R 1000:1000 ${APP_ROOT}/${APP_NAME}/.npm && \
+        cd ${APP_ROOT}/${APP_NAME}/ && \
+        npm install webpack webpack-cli --save-dev --legacy-peer-deps && \
+        npm run build:module
+    "
+        # npm install webpack webpack-cli --save-dev --legacy-peer-deps && \
+
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE exec app bash -c "$script_rebuild"
+    echo "Done build frontend in $enviroment"
+}
+
+collectstatic() {
+    echo "Starting get static files in $enviroment"
+
+    script_exec="python3 label_studio/manage.py collectstatic --noinput"
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE exec app bash -c "$script_exec"
+    echo "Done get static files in $enviroment"
+}
+
+dump_db() {
+    echo "Starting dump database in $enviroment"
+
+    script_exec="PGPASSWORD=postgres pg_dump --username postgres postgres" 
+    # --schema-only -t tablename
+
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE exec db bash -c "$script_exec" > init.sql
+    
+    echo "Done dump database in $enviroment with ./init.sql file"
+}
+
+createsuperuser() {
+    echo "$enviroment create superuser..."
+
+    script_exec="python3 label_studio/manage.py createsuperuser"
+    # --schema-only -t tablename
+    docker-compose -f $DOCKER_COMPOSE_FILE --env-file $ENV_FILE exec app bash -c "$script_exec"
+}
+
+
+if [[ -z "$cmd" ]]; then
+    echo "Missing command"
+    usage
+    exit 1
+fi
+
+if [[ -z "$enviroment" ]]; then
+    echo "Missing enviroment"
+    usage
+    exit 1
+fi
+
+shift 2
+
+case $cmd in
+build)
+    build "$@"
+    ;;
+up)
+    up "$@"
+    ;;
+down)
+    down "$@"
+    ;;
+reup)
+    down "$@"
+    sleep $REBUILD_SLEEP_SEC
+    up "$@"
+    ;;
+restart)
+    restart "$@"
+    ;;
+
+ps)
+    ps "$@"
+    ;;
+logs)
+    logs "$@"
+    ;;
+exec)
+    exec "$@"
+    ;;
+build_module)
+    build_module "$@"
+    ;;
+collectstatic)
+    collectstatic "$@"
+    ;;
+dump_db)
+    dump_db "$@"
+    ;;
+createsuperuser)
+    createsuperuser "$@"
+    ;;
+*)
+    echo "Unknown action"
+    usage
+    exit 1
+    ;;
+esac
+
+echo "RUNNING IN http://localhost:$NGINX_PORT"

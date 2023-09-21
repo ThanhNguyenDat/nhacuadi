@@ -1,0 +1,16 @@
+local_server=$1
+folder_name="BASE_REACT_WEBPACK"
+path_server="thanhnd13.103:/data4/thanhnd13/temp/$folder_name"
+path_local="."
+
+case $local_server in
+local_server)
+    rsync -av --exclude "node_modules" --exclude "build" --exclude "dist" --exclude "docker/data*" --exclude "yarn.lock"  --exclude "package-lock.json" --exclude "__pycache__" --exclude ".git" $path_local $path_server
+    ;;
+server_local)
+    rsync -av --exclude "node_modules" --exclude "build" --exclude "dist" --exclude "docker/data*" --exclude "yarn.lock"  --exclude "package-lock.json" --exclude "__pycache__" --exclude ".git" $path_server ../$path_local
+    ;;
+*)
+    echo "server_local || local_server"
+    ;;
+esac

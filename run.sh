@@ -1,0 +1,1 @@
+rm node_modules/@custom/ -rf package-lock.json  && npm install --legacy-peer-deps && npm run start

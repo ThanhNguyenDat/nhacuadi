@@ -1,0 +1,28 @@
+input {
+    // input css
+    border: none;
+    outline: none;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 20px;
+    caret-color: black;
+    color: inherit;
+    opacity: 1;
+    
+}
+
+.input-answer {
+    margin-bottom: 8px;
+    margin-right: 8px;
+    
+    ::-moz-selection { /* Code for Firefox */
+        color: rgb(255,255,255);
+        background: rgb(248, 225, 225);
+      }
+      
+      ::selection {
+        color: rgb(255,255,255);
+        background: rgb(248, 225, 225);
+      }
+}
