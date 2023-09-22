@@ -9,7 +9,7 @@
     "build:no-hash": "BUILD_NO_HASH=true BUILD_NO_CHUNKS=true yarn run build",
     "build:module": "BUILD_MODULE=true yarn run build:no-hash",
     "start:webpack": "webpack serve --open",
-    "start": "PORT=7201 react-scripts start",
+    "start": "PORT=3000 react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

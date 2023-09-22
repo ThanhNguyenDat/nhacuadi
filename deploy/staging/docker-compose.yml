@@ -9,7 +9,7 @@ services:
     volumes:
       - ${ROOT_PATH}/build:/root/${APP_NAME}/build
       - ${ROOT_PATH}/server.js:/root/${APP_NAME}/server.js
-    command: bash -c "npm run build:module && node server.js"
+    command: bash -c "export PORT=7200 && node server.js"
 
   app:
     stdin_open: true
@@ -22,12 +22,10 @@ services:
       args:
         - HTTP_PROXY=${HTTP_PROXY}
         - HTTPS_PROXY=${HTTPS_PROXY}
-        - PORT=${NGINX_PORT}
-
     restart: unless-stopped
     network_mode: "host"
     expose:
-      - 3000
+      - "3000"
     volumes:
       - /root/${APP_NAME}/node_modules
       - ${ROOT_PATH}/:/root/${APP_NAME}/

@@ -94,9 +94,9 @@ build_module() {
     echo "Starting build frontend in $enviroment"
 
     script_rebuild="
-        mkdir -p ${APP_ROOT}/${APP_NAME}/.npm
-        chown -R 1000:1000 ${APP_ROOT}/${APP_NAME}/.npm && \
-        cd ${APP_ROOT}/${APP_NAME}/ && \
+        mkdir -p /root/${APP_NAME}/.npm
+        chown -R 1000:1000 /root/${APP_NAME}/.npm && \
+        cd /root/${APP_NAME}/ && \
         npm install webpack webpack-cli --save-dev --legacy-peer-deps && \
         npm run build:module
     "
