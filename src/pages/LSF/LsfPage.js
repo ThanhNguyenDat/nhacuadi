@@ -1,30 +1,36 @@
-import React, { useEffect } from "react";
-import LabelStudio from "@custom/lsf/js/main";
-import "@custom/lsf/css/main.css";
+import React, { useEffect, useMemo } from "react";
+// import LabelStudio from "@custom/lsf/js/main";
+import tasks from "../../data/lesson_prepared.json";
+// import "@custom/lsf/css/main.css";
 
 export const LsfPage = () => {
+    const task = useMemo(() => tasks[0], []);
     useEffect(() => {
         // Tạo một thể hiện của Label Studio trên thành phần componentDidMount
-        const lsfInstance = new LabelStudio("lsf", {
+        const lsfInstance = new window.LabelStudio("lsf", {
             config: `
-                <View>
-                <Image name="img" value="$image"></Image>
-                <RectangleLabels name="tag" toName="img">
-                    <Label value="Hello"></Label>
-                    <Label value="World"></Label>
-                </RectangleLabels>
-                </View>
+            <View>
+            <Style>
+                .lsf-labels {
+                    display: none;
+                }
+            </Style>
+            <Labels name="label" toName="text">
+                <Label value="answer" background="red"/>
+            </Labels>
+                <FillInBlankText name="text" value="$text"/>
+            </View>
             `,
 
             interfaces: [
-                // "panel",
+                "panel",
                 "skip",
                 "update",
                 "submit",
                 "controls",
                 "bottombar",
                 // "topbar",
-                "no-side-bar",
+                "custom-ui",
                 // "side-column",
                 // "annotations:menu",
                 // "annotations:add-new",
@@ -32,12 +38,10 @@ export const LsfPage = () => {
                 // "predictions:menu",
             ],
             task: {
-                annotations: [],
-                predictions: [],
+                annotations: task.annotations,
+                predictions: task.predictions,
                 id: 1,
-                data: {
-                    image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg",
-                },
+                data: { ...task.data },
             },
 
             onLabelStudioLoad: function (LS) {
@@ -56,7 +60,7 @@ export const LsfPage = () => {
 
     return (
         <div>
-            <div id="lsf"></div>
+            <div id="lsf" />
         </div>
     );
 };

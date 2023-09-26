@@ -36,7 +36,7 @@ export const DragAndDrop = ({ sequences }) => {
                 sentence={state.sentence}
             />
 
-            <AnswerBox answers={state.answers} />
+            {/* <AnswerBox answers={state.answers} /> */}
         </div>
     );
 };
